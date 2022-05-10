@@ -1,13 +1,13 @@
-import SearchResult from "./SearchResult.js";
-
 export default function SearchInput({ $target, onChange }) {
   const $component = document.createElement("form");
   $component.className = "SearchInput";
   $target.appendChild($component);
+  const local = JSON.parse(localStorage.getItem("searchItems"));
 
   this.state = {
-    inputValue: null,
+    inputValue: local.inputValue ? local.inputValue : null,
   };
+
   this.setState = (nextState) => {
     this.state = nextState;
   };
@@ -18,8 +18,8 @@ export default function SearchInput({ $target, onChange }) {
         class="SearchInput__input"
         type="text"
         placeholder="프로그램 언어를 입력하세요."
-        value=""
-      />
+        value="${this.state.inputValue ? this.state.inputValue : ""}"
+  />
     `;
   };
 
@@ -30,6 +30,6 @@ export default function SearchInput({ $target, onChange }) {
   $component.addEventListener("keyup", (e) => {
     onChange(e);
   });
-
   this.render();
+  $target.querySelector(".SearchInput__input").focus();
 }

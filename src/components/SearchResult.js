@@ -9,9 +9,24 @@ export default function SearchResult({
   $component.className = "Suggestion";
   $target.appendChild($component);
 
+  const local = JSON.parse(localStorage.getItem("searchItems"));
+  if (local) {
+    this.state.suggestions = local.fetchLanguages;
+  }
+
   this.setState = (nextState) => {
     this.state = nextState;
     this.render();
+  };
+  this.renderMatchedItem = (keyword, item) => {
+    if (!item.includes(keyword)) {
+      return item;
+    }
+    const matchedText = item.match(new RegExp(keyword, "gi"))[0];
+    return item.replace(
+      new RegExp(matchedText, "gi"),
+      `<span class="Suggestion__item--matched">${matchedText}</span>`
+    );
   };
 
   this.render = () => {
@@ -26,7 +41,10 @@ export default function SearchResult({
             index === this.state.currentIndex
               ? "Suggestion__item--selected"
               : ""
-          }" data-selected-id="${index}">${language}</li>`
+          }" data-selected-id="${index}">${this.renderMatchedItem(
+            this.state.inputValue,
+            language
+          )}</li>`
       )
       .join("")}
     </ul >`
@@ -58,7 +76,7 @@ export default function SearchResult({
   });
 
   $target.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && this.state.suggestions.length > 0) {
       onSelect(this.state.currentIndex);
     }
   });

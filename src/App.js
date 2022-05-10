@@ -15,11 +15,19 @@ export default function App($target) {
   this.setState = (nextState) => {
     this.state = nextState;
     searchResult.setState({
+      ...this.state,
       suggestions: this.state.fetchLanguages,
       currentIndex: 0,
     });
     selectedLanguages.setState(this.state.selectedLanguages);
+
+    localStorage.setItem("searchItems", JSON.stringify(this.state));
   };
+
+  const selectedLanguages = new SelectedLanguages({
+    $target,
+    initialState: this.state.selectedLanguages,
+  });
 
   const searchInput = new SearchInput({
     $target,
@@ -47,6 +55,7 @@ export default function App($target) {
     initialState: {
       suggestions: [],
       currentIndex: 0,
+      keyword: this.state.inputValue,
     },
     onClick: async (e) => {
       const $li = e.target.closest("li");
@@ -55,37 +64,39 @@ export default function App($target) {
         const selectedLanguage = this.state.fetchLanguages.find(
           (language, index) => index === parseInt(selectedId)
         );
-        console.log(selectedLanguage, "click: 선택한 언어 출력까지 완료");
-        // alert(selectedLanguage)
+        alert(selectedLanguage);
+        let nextSelectedLanguages = removeSameLangs(selectedLanguage);
         this.setState({
           ...this.state,
-          selectedLanguages: [
-            ...this.state.selectedLanguages,
-            selectedLanguage,
-          ],
+          selectedLanguages: nextSelectedLanguages,
         });
       }
     },
     onSelect: async (e) => {
-      if (e) {
+      if (e >= 0) {
         const selectedLanguage = this.state.fetchLanguages.find(
           (language, index) => index === e
         );
-        console.log(selectedLanguage, "Enter: 선택한 언어 출력까지 완료");
-        // alert(selectedLanguage)
+        alert(selectedLanguage);
+        let nextSelectedLanguages = removeSameLangs(selectedLanguage);
         this.setState({
           ...this.state,
-          selectedLanguages: [
-            ...this.state.selectedLanguages,
-            selectedLanguage,
-          ],
+          selectedLanguages: nextSelectedLanguages,
         });
       }
     },
   });
 
-  const selectedLanguages = new SelectedLanguages({
-    $target,
-    initialState: this.state.selectedLanguages,
-  });
+  // 중복된 언어 처리
+  const removeSameLangs = (selectedLang) => {
+    const nextSelectedLangs = [...this.state.selectedLanguages];
+    const index = nextSelectedLangs.findIndex(
+      (language) => language === selectedLang
+    );
+    if (index >= 0) {
+      nextSelectedLangs.splice(index, 1); // 해당 index에 있는 요소 1개만 제거
+    }
+    nextSelectedLangs.push(selectedLang);
+    return nextSelectedLangs;
+  };
 }
